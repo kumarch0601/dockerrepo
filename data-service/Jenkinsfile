@@ -8,20 +8,21 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
-            steps {
-                sh 'mvn clean compile package org.sonarsource.scanner.maven:sonar-maven-plugin:RELEASE:sonar  -Dsonar.login=9c5fcea336ecf77f90ab404798832d89732e04f9 -f ./data-service/pom.xml'
+        stage('Maven Install') {
+          agent {
+            docker {
+                image 'maven:3.5.0'
             }
+          }
+          steps {
+            sh 'mvn clean install'
+          }
         }
-        stage('Test') {
-            steps {
-                sh 'mvn clean compile package -f ./data-service/pom.xml'
-            }
-            post {
-                always {
-                    archiveArtifacts '**/*.jar'
-                }
-            }
+        stage('Docker Build') {
+          agent any
+              steps {
+                sh 'docker build -t kumar/data-service-test:1.0.0ß .'
+              }
         }
     }
 }
