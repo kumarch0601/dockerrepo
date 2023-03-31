@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'mvn clean compile package org.sonarsource.scanner.maven:sonar-maven-plugin:RELEASE:sonar -f ./data-service/pom.xml'
+                sh 'mvn clean compile package org.sonarsource.scanner.maven:sonar-maven-plugin:RELEASE:sonar  -Dsonar.login=9c5fcea336ecf77f90ab404798832d89732e04f9 -f ./data-service/pom.xml'
             }
         }
         stage('Test') {
