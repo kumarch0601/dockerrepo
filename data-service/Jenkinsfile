@@ -18,7 +18,12 @@ pipeline {
         stage('Docker Build') {
           agent any
               steps {
-                sh '/usr/local/bin/docker build . -t kumar/data-service-test:$BUILD_NUMBER -f ./data-service/Dockerfile'
+                sh "pwd"
+                  dir("${env.WORKSPACE}/data-service") {
+                    sh "pwd"
+                  }
+                  sh "pwd"
+                sh '/usr/local/bin/docker build . -t kumar/data-service-test:$BUILD_NUMBER'
                 echo 'Docker build completed'
               }
         }
