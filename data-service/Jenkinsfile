@@ -18,7 +18,7 @@ pipeline {
         stage('Docker Build') {
           agent any
               steps {
-                sh 'docker build -t kumar/data-service-test:$BUILD_NUMBER .'
+                sh '/usr/local/bin/docker build -t kumar/data-service-test:$BUILD_NUMBER .'
                 echo 'Docker build completed'
               }
         }
