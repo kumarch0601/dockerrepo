@@ -1,7 +1,11 @@
 
 pipeline {
-    agent {
-       label 'docker'
+
+    stage('Initialize')
+    {
+        def dockerHome = tool 'docker'
+        def mavenHome  = tool 'Maven'
+        env.PATH = "${dockerHome}/bin:${mavenHome}/bin:${env.PATH}"
     }
 
     tools {
