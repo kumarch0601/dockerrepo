@@ -3,17 +3,12 @@ pipeline {
 
     tools {
         maven "Maven"
-        docker "Docker"
+        //docker "Docker"
         jdk "openjdk-14"
     }
 
     stages {
         stage('Maven Install') {
-          agent {
-            docker {
-                image 'maven:3.5.0'
-            }
-          }
           steps {
             sh 'mvn clean install'
           }
@@ -21,7 +16,8 @@ pipeline {
         stage('Docker Build') {
           agent any
               steps {
-                sh 'docker build -t kumar/data-service-test:1.0.0 .'
+                sh 'docker build -t kumar/data-service-test:$BUILD_NUMBER .'
+                echo 'Docker build completed'
               }
         }
     }
