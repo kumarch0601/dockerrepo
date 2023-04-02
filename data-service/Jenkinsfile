@@ -21,7 +21,7 @@ pipeline {
         stage('Docker Build') {
           agent any
               steps {
-                sh 'docker build -t kumar/data-service-test:1.0.0ß .'
+                sh 'docker build -t kumar/data-service-test:1.0.0 .'
               }
         }
     }
