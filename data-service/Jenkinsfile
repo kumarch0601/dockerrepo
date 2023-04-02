@@ -21,9 +21,9 @@ pipeline {
                 sh "pwd"
                   dir("${env.WORKSPACE}/data-service") {
                     sh "pwd"
+                    sh '/usr/local/bin/docker build -t kumar/data-service-test:$BUILD_NUMBER .'
                   }
                   sh "pwd"
-                sh '/usr/local/bin/docker build . -t kumar/data-service-test:$BUILD_NUMBER'
                 echo 'Docker build completed'
               }
         }
