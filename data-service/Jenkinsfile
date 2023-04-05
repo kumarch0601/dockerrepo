@@ -15,17 +15,10 @@ pipeline {
             sh 'mvn clean install'
           }
         }
-        stage('Docker Build') {
-          agent any
-              steps {
-                sh "pwd"
-                  dir("${env.WORKSPACE}/data-service") {
-                    sh "pwd"
-                    sh '/usr/local/bin/docker build -t kumar/data-service-test:$BUILD_NUMBER .'
-                  }
-                  sh "pwd"
-                echo 'Docker build completed'
-              }
+        stage('SonarScan') {
+          steps {
+               sh 'mvn clean compile package org.sonarsource.scanner.maven:sonar-maven-plugin:RELEASE:sonar  -Dsonar.login=sqa_1cfd4b7704372de7634c90cc89b92dddbd15509e -f ./data-service/pom.xml'
+          }
         }
     }
 }
