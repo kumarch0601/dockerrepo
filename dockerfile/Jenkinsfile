@@ -24,7 +24,7 @@ pipeline{
 		stage('Push') {
 
 			steps {
-				sh 'docker push kumarch0601/nodmynginxeapp:latest'
+				sh 'docker push kumarch0601/mynginx:latest'
 			}
 		}
 	}
