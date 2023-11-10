@@ -1,0 +1,166 @@
+gcloud auth application-default login
+
+export GOOGLE_APPLICATION_CREDENTIALS="/Users/sasi/.config/gcloud/application_default_credentials.json"
+
+-----------
+
+gcloud config set project playground-s-11-88f2490d
+
+gcloud services enable container.googleapis.com
+
+gcloud container clusters create my-cluster --zone us-central1-a --num-nodes 3
+
+gcloud services enable artifactregistry.googleapis.com
+
+gcloud services enable cloudtrace.googleapis.com
+
+gcloud auth application-default login
+gcloud auth application-default set-quota-project playground-s-11-88f2490d
+
+
+gcloud artifacts repositories create my-docker-repo --location=us-central1 --repository-format=docker --project=playground-s-11-88f2490d
+
+gcloud auth configure-docker us-central1-docker.pkg.dev
+
+upload project.jar, customer.jar, gateway.jar and Dockerfiles
+
+
+# Use a base image with Java installed (e.g., OpenJDK)
+FROM openjdk:17
+
+# Copy the JAR file into the container
+COPY product-0.0.1-SNAPSHOT.jar /app.jar
+
+# Set the working directory
+WORKDIR /
+
+# Define the entry point and specify the main class to run
+ENTRYPOINT ["java","-jar","/app.jar"]
+
+
+docker build -t my-gateway-app:v7 .
+docker build -t my-customer-app:v1 .
+docker build -t my-product-app:v1 .
+
+docker images
+
+docker tag my-gateway-app:v7 us-central1-docker.pkg.dev/playground-s-11-88f2490d/my-docker-repo/my-gateway-app:v7
+docker tag my-customer-app:v1 us-central1-docker.pkg.dev/playground-s-11-88f2490d/my-docker-repo/my-customer-app:v1
+docker tag my-product-app:v1 us-central1-docker.pkg.dev/playground-s-11-88f2490d/my-docker-repo/my-product-app:v1
+
+docker push us-central1-docker.pkg.dev/playground-s-11-88f2490d/my-docker-repo/my-gateway-app:v7
+docker push us-central1-docker.pkg.dev/playground-s-11-88f2490d/my-docker-repo/my-customer-app:v1
+docker push us-central1-docker.pkg.dev/playground-s-11-88f2490d/my-docker-repo/my-product-app:v1
+
+docker pull us-central1-docker.pkg.dev/playground-s-11-88f2490d/my-docker-repo/my-gateway-app:v7
+docker pull us-central1-docker.pkg.dev/playground-s-11-88f2490d/my-docker-repo/my-customer-app:v1
+docker pull us-central1-docker.pkg.dev/playground-s-11-88f2490d/my-docker-repo/my-product-app:v1
+
+
+----
+deployment.yaml
+
+kubectl apply -f deployment.yaml
+
+
+kubectl expose deployment my-product-app-deployment --type=LoadBalancer --name=my-product-service-lb --port=80 --target-port=9080
+kubectl expose deployment my-customer-app-deployment --type=LoadBalancer --name=my-customer-service-lb --port=80 --target-port=8080
+kubectl expose deployment my-gateway-app-deployment --type=LoadBalancer --name=my-gateway-service-lb --port=80 --target-port=9500
+
+http://34.27.120.191/product
+http://34.70.220.218/customer
+http://34.132.159.14/api/customer
+
+
+---------
+
+# Use a base image with Java installed (e.g., OpenJDK)
+FROM openjdk:17
+
+# Copy the JAR file into the container
+COPY gateway-0.0.1-SNAPSHOT.jar /app.jar
+
+# Set the working directory
+WORKDIR /
+
+# Define the entry point and specify the main class to run
+ENTRYPOINT ["java","-jar","/app.jar"]
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-gateway-app-deployment
+spec:
+  replicas: 1  # Adjust as needed
+  selector:
+    matchLabels:
+      app: my-gateway-app
+  template:
+    metadata:
+      labels:
+        app: my-gateway-app
+    spec:
+      containers:
+      - name: my-gateway-container
+        image: us-central1-docker.pkg.dev/playground-s-11-88f2490d/my-docker-repo/my-gateway-app:v1
+
+
+# Use a base image with Java installed (e.g., OpenJDK)
+FROM openjdk:17
+
+# Copy the JAR file into the container
+COPY product-0.0.1-SNAPSHOT.jar /app.jar
+
+# Set the working directory
+WORKDIR /
+
+# Define the entry point and specify the main class to run
+ENTRYPOINT ["java","-jar","/app.jar"]
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-product-app-deployment
+spec:
+  replicas: 1  # Adjust as needed
+  selector:
+    matchLabels:
+      app: my-product-app
+  template:
+    metadata:
+      labels:
+        app: my-product-app
+    spec:
+      containers:
+      - name: my-product-container
+        image: us-central1-docker.pkg.dev/playground-s-11-88f2490d/my-docker-repo/my-product-app:v1
+
+# Use a base image with Java installed (e.g., OpenJDK)
+FROM openjdk:17
+
+# Copy the JAR file into the container
+COPY customer-0.0.1-SNAPSHOT.jar /app.jar
+
+# Set the working directory
+WORKDIR /
+
+# Define the entry point and specify the main class to run
+ENTRYPOINT ["java","-jar","/app.jar"]
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-customer-app-deployment
+spec:
+  replicas: 1  # Adjust as needed
+  selector:
+    matchLabels:
+      app: my-customer-app
+  template:
+    metadata:
+      labels:
+        app: my-customer-app
+    spec:
+      containers:
+      - name: my-customer-container
+        image: us-central1-docker.pkg.dev/playground-s-11-88f2490d/my-docker-repo/my-customer-app:v1
